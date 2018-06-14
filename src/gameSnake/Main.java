@@ -21,7 +21,11 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.util.ArrayList;
+import view.Ganhou;
 
 /**
  *
@@ -32,9 +36,10 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
     private BulletAppState bulletAppState;
     private Node map;
     private Player player;
+    private Player player2;
     private boolean upP1 = false, downP1 = false, leftP1 = false, rightP1 = false;
     private boolean upP2 = false, downP2 = false, leftP2 = false, rightP2 = false;
-    
+    private boolean freeBall = false;
     private Fruit fruit;
     private ArrayList<Fruit> fruits = new ArrayList<>();
     //Inicializa game
@@ -62,7 +67,7 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
         
         
         
-        //bulletAppState.setDebugEnabled(true);
+        bulletAppState.setDebugEnabled(true);
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
     }
 
@@ -133,33 +138,83 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
                 break;
         }
     }
-
+    private float valor = 0.4f;
     @Override
     public void collision(PhysicsCollisionEvent event) {
         
-        System.out.println("Evento A: " + event.getNodeA().getName());
-        System.out.println("Evento B: " + event.getNodeB().getName());
+        //System.out.println("Evento A: " + event.getNodeA().getName());
+        //System.out.println("Evento B: " + event.getNodeB().getName());
         
         if (event.getNodeA().getName().equals("player1") || event.getNodeB().getName().equals("player1")) {
             if(event.getNodeA().getName().equals("fruit")) {
                 rootNode.detachChild(event.getNodeA());
                 bulletAppState.getPhysicsSpace().remove(event.getNodeA().getControl(RigidBodyControl.class));
                 fruits.remove(event.getNodeA());
+                player.crescer(bulletAppState);
+                freeBall = true;
             }
             else if(event.getNodeB().getName().equals("fruit")) {
                 rootNode.detachChild(event.getNodeB());
                 bulletAppState.getPhysicsSpace().remove(event.getNodeB().getControl(RigidBodyControl.class));
                 fruits.remove(event.getNodeB());
+                player.crescer(bulletAppState);
+                
+                freeBall = true;
+            }
+        }else if (event.getNodeA().getName().equals("player2") || event.getNodeB().getName().equals("player2")) {
+            if(event.getNodeA().getName().equals("fruit")) {
+                rootNode.detachChild(event.getNodeA());
+                bulletAppState.getPhysicsSpace().remove(event.getNodeA().getControl(RigidBodyControl.class));
+                fruits.remove(event.getNodeA());
+                player2.crescer(bulletAppState);
+                freeBall = true;
+            }
+            else if(event.getNodeB().getName().equals("fruit")) {
+                rootNode.detachChild(event.getNodeB());
+                bulletAppState.getPhysicsSpace().remove(event.getNodeB().getControl(RigidBodyControl.class));
+                fruits.remove(event.getNodeB());
+                player2.crescer(bulletAppState);
+                freeBall = true;
             }
         }
+        
+        //Evento para ver quem ganhou o jogo
+        if(event.getNodeA().getName().equals("player2") || event.getNodeB().getName().equals("player2")){
+            if(event.getNodeA().getName().equals("player1") || event.getNodeB().getName().equals("player1")){
+                if(player.getLocalScale().x > player2.getLocalScale().x){
+                    System.out.println("Player 1 Ganhou");
+                    Reiniciar();
+                    Ganhou g = new Ganhou();
+                    centralizar(g);
+                    g.setGanhador("Player 1 Ganhou");
+                    g.setVisible(true);
+                }else{
+                    System.out.println("Player 2 Ganhou");
+                    Reiniciar();
+                    Ganhou g = new Ganhou();
+                    centralizar(g);
+                    g.setGanhador("Player 2 Ganhou");
+                    g.setVisible(true);
+                }
+            }
+        }
+        
     }
     
-    
+     private void centralizar(Container container) {
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        container.setLocation((screen.width - container.getWidth()) / 2, (screen.height - container.getHeight()) / 2);
+  }
     @Override
     public void simpleUpdate(float tpf) {
 
          player.move(tpf,leftP1,rightP1,upP1,downP1);
+         player2.move(tpf,leftP2,rightP2,upP2,downP2);
          
+         if(freeBall){
+             freeBall = false;
+             CreateFruit();
+         }
          //Ver posicao Tela
         // System.out.println("Posicao Player: " + player.getLocalTranslation());
          //System.out.println("Posicao Player Rotacao: " + player.getLocalRotation());
@@ -227,8 +282,10 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
     
 
     private void CreatePlayer() {
-        player = new Player("player1", assetManager, bulletAppState, inputManager, cam);
+        player = new Player("player1", assetManager, bulletAppState, inputManager, cam, new Vector3f(10f, 0.5f, 10f), ColorRGBA.randomColor());
+        player2 = new Player("player2", assetManager, bulletAppState, inputManager, cam, new Vector3f(20f,0.5f,20f),ColorRGBA.randomColor());
         rootNode.attachChild(player);
+        rootNode.attachChild(player2);
     }
 
     private void CreateFruit() {
@@ -237,5 +294,14 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
        fruits.add(fruit);
        rootNode.attachChild(fruit);
        
+    }
+    
+    private void Reiniciar(){
+        rootNode.detachChild(player);
+        rootNode.detachChild(player2);
+        bulletAppState.getPhysicsSpace().removeAll(player);
+        bulletAppState.getPhysicsSpace().removeAll(player2);
+        CreatePlayer();
+        
     }
 }

@@ -16,13 +16,15 @@ import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
+import java.util.ArrayList;
 
 /**
  *
  * @author educr
  */
 public class Player extends Node{
-    private final BetterCharacterControl physicsCharacter;
+    private  BetterCharacterControl physicsCharacter;
     private Vector3f walkDirection = new Vector3f(0, 0, 0);
     private Vector3f viewDirection = new Vector3f(0, 0, 0);
     public double theta = 0;
@@ -31,12 +33,14 @@ public class Player extends Node{
     private boolean antiRight;
     private boolean antiUp;
     private boolean antiDown;
-    public Player(String player, AssetManager assetManager, BulletAppState bulletAppState, InputManager inputManager, Camera cam)
+    private float tamColisao;
+    
+    public Player(String player, AssetManager assetManager, BulletAppState bulletAppState, InputManager inputManager, Camera cam, Vector3f posicao, ColorRGBA color)
     {
         super(player);
         this.z = 0f;
         this.x = 0f;
-    
+        this.tamColisao = 0.4f;
         antiDown = true;
         antiLeft = true;
         antiRight = true;
@@ -46,26 +50,34 @@ public class Player extends Node{
         Geometry boxGeo;
         Material boxMat;
         
+        
+        /*
+        Sphere s = new Sphere(20,20,0.5f);
+        Geometry geom = new Geometry(name, s);
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setTexture("ColorMap",assetManager.loadTexture("Textures/" + text));
+        geom.setMaterial(mat);
+        */
+        Sphere s = new Sphere(20,20,0.5f);
+        
         setName(player);
-        boxMesh = new Box(0.5f, 0.5f, 0.5f);
-        boxGeo = new Geometry("Box", boxMesh);
+        //boxMesh = new Box(0.5f, 0.5f, 0.5f);
+        boxGeo = new Geometry("Box", s);
         boxMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setColor("Color", ColorRGBA.White);
+        boxMat.setColor("Color", color);
         boxGeo.setMaterial(boxMat);
         attachChild(boxGeo);
         
-        setLocalTranslation(10f, 0.5f, 10f);   
+        setLocalTranslation(posicao);   
         
-        physicsCharacter = new BetterCharacterControl(0.4f, 0.4f, 0.1f);
+        physicsCharacter = new BetterCharacterControl(tamColisao, tamColisao, tamColisao);
         addControl(physicsCharacter);
+        
         
         bulletAppState.getPhysicsSpace().add(physicsCharacter);
         
 
    }
-
-   
-
     
     public Vector3f getWalkDirection() {
         return walkDirection;
@@ -126,5 +138,17 @@ public class Player extends Node{
         physicsCharacter.setViewDirection(direcao);
     }
     
+    
+    void crescer(BulletAppState bulletAppState){
+        
+        setLocalScale(getLocalScale().x+0.07f, getLocalScale().y+0.07f, getLocalScale().z+0.07f);
+        bulletAppState.getPhysicsSpace().remove(physicsCharacter);
+        
+        tamColisao+=0.02f;
+        physicsCharacter = new BetterCharacterControl(tamColisao,tamColisao,tamColisao);
+        addControl(physicsCharacter);
+        
+        bulletAppState.getPhysicsSpace().add(physicsCharacter);
+    }
     
 }
