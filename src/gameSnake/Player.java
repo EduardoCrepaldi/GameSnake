@@ -141,10 +141,11 @@ public class Player extends Node{
     
     void crescer(BulletAppState bulletAppState){
         
-        setLocalScale(getLocalScale().x+0.07f, getLocalScale().y+0.07f, getLocalScale().z+0.07f);
+        setLocalScale(getLocalScale().x+0.05f, getLocalScale().y+0.055f, getLocalScale().z+0.05f);
+        
         bulletAppState.getPhysicsSpace().remove(physicsCharacter);
         
-        tamColisao+=0.02f;
+        tamColisao+=0.01f;
         physicsCharacter = new BetterCharacterControl(tamColisao,tamColisao,tamColisao);
         addControl(physicsCharacter);
         

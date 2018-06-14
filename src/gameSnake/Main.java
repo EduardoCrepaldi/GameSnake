@@ -67,7 +67,7 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
         
         
         
-        bulletAppState.setDebugEnabled(true);
+        //bulletAppState.setDebugEnabled(true);
         bulletAppState.getPhysicsSpace().addCollisionListener(this);
     }
 
@@ -181,20 +181,12 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
         //Evento para ver quem ganhou o jogo
         if(event.getNodeA().getName().equals("player2") || event.getNodeB().getName().equals("player2")){
             if(event.getNodeA().getName().equals("player1") || event.getNodeB().getName().equals("player1")){
-                if(player.getLocalScale().x > player2.getLocalScale().x){
+                if(player.getLocalScale().x >= player2.getLocalScale().x){
                     System.out.println("Player 1 Ganhou");
-                    Reiniciar();
-                    Ganhou g = new Ganhou();
-                    centralizar(g);
-                    g.setGanhador("Player 1 Ganhou");
-                    g.setVisible(true);
+                    Final("Player 1 Ganhou");
                 }else{
                     System.out.println("Player 2 Ganhou");
-                    Reiniciar();
-                    Ganhou g = new Ganhou();
-                    centralizar(g);
-                    g.setGanhador("Player 2 Ganhou");
-                    g.setVisible(true);
+                   Final("Player 2 Ganhou");
                 }
             }
         }
@@ -205,6 +197,14 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         container.setLocation((screen.width - container.getWidth()) / 2, (screen.height - container.getHeight()) / 2);
   }
+     
+     void Final(String ganhador){
+                    Reiniciar();
+                    Ganhou g = new Ganhou();
+                    centralizar(g);
+                    g.setGanhador(ganhador);
+                    g.setVisible(true);
+     }
     @Override
     public void simpleUpdate(float tpf) {
 
@@ -214,6 +214,15 @@ public class Main extends SimpleApplication implements ActionListener, PhysicsCo
          if(freeBall){
              freeBall = false;
              CreateFruit();
+         }
+         
+         if(player.getLocalTranslation().y <= -5){
+             Final("Player 2 Ganhou");
+         }
+         
+         if(player2.getLocalTranslation().y <= -5)
+         {
+             Final("Player 1 Ganhou");
          }
          //Ver posicao Tela
         // System.out.println("Posicao Player: " + player.getLocalTranslation());
